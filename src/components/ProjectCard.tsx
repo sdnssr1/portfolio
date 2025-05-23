@@ -1,5 +1,5 @@
-import React from "react";
-import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,191 +8,192 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Github, ExternalLink, ChevronRight } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
+import { Calendar, ExternalLink, Github, Star } from "lucide-react";
+import React, { useState } from "react";
+import ProjectDetails from "./ProjectDetails";
 
-interface ProjectCardProps {
-  title?: string;
-  description?: string;
-  technologies?: string[];
-  imageUrl?: string;
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  image: string;
   githubUrl?: string;
-  liveUrl?: string;
-  detailedDescription?: string;
-  features?: string[];
-  isOpen?: boolean;
+  demoUrl?: string;
+  stars?: number;
+  updatedAt?: string;
+  category?: string;
 }
 
-const ProjectCard = ({
-  title = "Project Title",
-  description = "A brief description of the project showcasing key aspects and technologies used.",
-  technologies = ["React", "TypeScript", "Tailwind CSS"],
-  imageUrl = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-  githubUrl = "#",
-  liveUrl = "#",
-  detailedDescription = "This is a more detailed description of the project that explains the problem it solves, the approach taken, and the outcomes achieved. It provides context about why the project was built and what makes it special.",
-  features = [
-    "Feature one with detailed explanation",
-    "Feature two with implementation details",
-    "Feature three showcasing technical complexity",
-  ],
-  isOpen = false,
-}: ProjectCardProps) => {
+interface ProjectCardProps {
+  project: Project;
+}
+
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project: projectProp,
+}) => {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const {
+    title,
+    description,
+    technologies,
+    image,
+    githubUrl,
+    demoUrl,
+    stars,
+    updatedAt,
+    category,
+  } = projectProp;
+  // Handle image loading errors
+  const [imgSrc, setImgSrc] = useState(image);
+  const handleImageError = () => {
+    setImgSrc('https://via.placeholder.com/800x450/1e293b/64748b?text=No+Preview');
+  };
+
   return (
-    <motion.div
-      className="bg-background h-full"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ y: -5 }}
-    >
-      <Card className="h-full flex flex-col overflow-hidden border-2 hover:border-primary/50 transition-all duration-300">
-        <div className="relative h-48 overflow-hidden">
+    <div className="h-full group">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="h-full relative"
+      >
+        <Card
+          className="h-full flex flex-col overflow-hidden transition-all duration-300 cursor-pointer border border-border/50 
+                   hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 group-hover:translate-y-[-5px]"
+          onClick={() => setIsDetailsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsDetailsOpen(true);
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={`View details for ${title}`}
+        >
+        {/* Project Image */}
+        <div className="relative h-48 overflow-hidden bg-muted/20">
           <img
-            src={imageUrl}
+            src={imgSrc}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            onError={handleImageError}
+            loading="lazy"
           />
+          {category && (
+            <motion.div 
+              className="absolute top-2 right-2"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Badge variant="secondary">{category}</Badge>
+            </motion.div>
+          )}
         </div>
 
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-bold">{title}</CardTitle>
-          <CardDescription className="line-clamp-2">
-            {description}
+          <CardTitle className="text-xl font-bold line-clamp-1">{title}</CardTitle>
+          <CardDescription className="line-clamp-2 min-h-[40px]">
+            {description || 'No description provided.'}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex-grow">
           <div className="flex flex-wrap gap-2 mb-4">
-            {technologies.map((tech, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {tech}
+            {technologies?.length > 0 ? (
+              technologies.slice(0, 3).map((tech, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {tech}
+                </Badge>
+              ))
+            ) : (
+              <Badge variant="outline" className="text-xs">
+                No technologies specified
               </Badge>
-            ))}
+            )}
+          </div>
+
+          {/* GitHub Stats */}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+            {stars !== undefined && (
+              <div className="flex items-center">
+                <Star className="h-3 w-3 mr-1 text-yellow-500 fill-yellow-500" />
+                <span>{stars}</span>
+              </div>
+            )}
+            {updatedAt && (
+              <div className="flex items-center" title={`Last updated ${new Date(updatedAt).toLocaleDateString()}`}>
+                <Calendar className="h-3 w-3 mr-1" />
+                <span>{formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}</span>
+              </div>
+            )}
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between pt-2">
-          <div className="flex gap-2">
+        <CardFooter className="mt-auto flex justify-between items-center pt-4">
+          <div className="flex items-center space-x-1">
             {githubUrl && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4 mr-1" />
-                  Code
-                </a>
-              </Button>
+              <a
+                href={githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-muted/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Open GitHub URL directly without opening the modal
+                  window.open(githubUrl, '_blank', 'noopener,noreferrer');
+                }}
+                aria-label="View on GitHub"
+                title="View on GitHub"
+              >
+                <Github className="h-4 w-4" />
+              </a>
             )}
-            {liveUrl && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={liveUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  Demo
-                </a>
-              </Button>
+            {demoUrl && (
+              <a
+                href={demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-muted/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Open demo URL directly without opening the modal
+                  window.open(demoUrl, '_blank', 'noopener,noreferrer');
+                }}
+                aria-label="View live demo"
+                title="View live demo"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </a>
             )}
           </div>
-
-          <Dialog defaultOpen={isOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-primary">
-                Details <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">
-                  {title}
-                </DialogTitle>
-                <DialogDescription className="text-foreground/80">
-                  {description}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="mt-4">
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="w-full h-64 object-cover rounded-md mb-6"
-                />
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      About this project
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {detailedDescription}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Key Features</h3>
-                    <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                      {features.map((feature, index) => (
-                        <li key={index}>{feature}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      Technologies Used
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {technologies.map((tech, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="text-sm"
-                        >
-                          {tech}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 pt-4">
-                    {githubUrl && (
-                      <Button asChild>
-                        <a
-                          href={githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Github className="h-4 w-4 mr-2" />
-                          View Source Code
-                        </a>
-                      </Button>
-                    )}
-                    {liveUrl && (
-                      <Button variant="outline" asChild>
-                        <a
-                          href={liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Visit Live Demo
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          {updatedAt && (
+            <span className="text-xs text-muted-foreground flex items-center">
+              <Calendar className="h-3 w-3 mr-1" />
+              {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+            </span>
+          )}
         </CardFooter>
       </Card>
-    </motion.div>
+
+      <ProjectDetails 
+        project={projectProp} 
+        isOpen={isDetailsOpen} 
+        onClose={() => {
+          setIsDetailsOpen(false);
+          // Focus the card when modal closes for better keyboard navigation
+          const card = document.querySelector(`[data-project-id="${projectProp.id}"]`);
+          if (card instanceof HTMLElement) {
+            setTimeout(() => card.focus(), 0);
+          }
+        }}
+      />
+      </motion.div>
+    </div>
   );
 };
 
