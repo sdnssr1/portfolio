@@ -14,7 +14,7 @@ const HeroSection = ({
   name = "Saeed",
   title = "Multidisciplinary Creator & Full-Stack Developer",
   description = "I care deeply about getting things right from the very first commit. Blending software engineering with design, systems-thinking, and storytelling to build ethical, privacy-focused solutions.",
-  imageUrl = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&q=80",
+  imageUrl = "/7990E5BA-7F49-4146-BB79-D81BDDE5C069.jpg",
 }: HeroSectionProps) => {
   return (
     <section className="min-h-[700px] w-full bg-background flex items-center justify-center py-16 px-4 md:px-8 lg:px-16">
@@ -83,7 +83,7 @@ const HeroSection = ({
         </motion.div>
 
         <motion.div
-          className="flex justify-center md:justify-end"
+          className="flex justify-center md:justify-end -mt-12"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -93,6 +93,7 @@ const HeroSection = ({
               src={imageUrl}
               alt={`${name} - Professional Headshot`}
               className="w-full h-full object-cover"
+              style={{ objectPosition: '70% 100%' }}
             />
           </div>
         </motion.div>
