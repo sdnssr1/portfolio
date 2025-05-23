@@ -25,15 +25,25 @@ import {
 } from "./ui/card";
 import { Alert, AlertDescription } from "./ui/alert";
 
+const SERVICE_TYPES = [
+  { value: "web", label: "Web Development" },
+  { value: "ai", label: "AI Integration" },
+  { value: "mobile", label: "Mobile Development" },
+  { value: "consulting", label: "Technical Consulting" },
+  { value: "other", label: "Other" },
+];
+
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
+  serviceType: z.string().min(1, { message: "Please select a service type." }),
   subject: z
     .string()
     .min(5, { message: "Subject must be at least 5 characters." }),
   message: z
     .string()
-    .min(10, { message: "Message must be at least 10 characters." }),
+    .min(10, { message: "Message must be at least 10 characters." })
+    .max(1000, { message: "Message must be less than 1000 characters." }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -49,6 +59,7 @@ const ContactForm = () => {
     defaultValues: {
       name: "",
       email: "",
+      serviceType: "",
       subject: "",
       message: "",
     },
@@ -79,10 +90,9 @@ const ContactForm = () => {
     <div className="w-full max-w-2xl mx-auto bg-background p-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Get in Touch</CardTitle>
-          <CardDescription>
-            Have a question or want to work together? Send me a message and I'll
-            get back to you soon.
+          <CardTitle className="text-2xl font-bold text-foreground">Let's Work Together</CardTitle>
+          <CardDescription className="text-muted-foreground/90">
+            Interested in my services or have a project in mind? Fill out the form below and I'll get back to you within 24 hours.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,7 +121,7 @@ const ContactForm = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Name *</FormLabel>
                       <FormControl>
                         <Input placeholder="Your name" {...field} />
                       </FormControl>
@@ -125,13 +135,9 @@ const ContactForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Email *</FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="your.email@example.com"
-                          {...field}
-                        />
+                        <Input placeholder="your.email@example.com" type="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -141,12 +147,36 @@ const ContactForm = () => {
 
               <FormField
                 control={form.control}
+                name="serviceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What can I help you with? *</FormLabel>
+                    <FormControl>
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground bg-background"
+                        {...field}
+                      >
+                        <option value="">Select a service...</option>
+                        {SERVICE_TYPES.map((service) => (
+                          <option key={service.value} value={service.value}>
+                            {service.label}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel>Subject *</FormLabel>
                     <FormControl>
-                      <Input placeholder="What's this about?" {...field} />
+                      <Input placeholder="Project inquiry" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -158,10 +188,10 @@ const ContactForm = () => {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message</FormLabel>
+                    <FormLabel>Project Details *</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Your message here..."
+                        placeholder="Tell me about your project, timeline, and any specific requirements..."
                         className="min-h-[150px]"
                         {...field}
                       />
@@ -170,6 +200,7 @@ const ContactForm = () => {
                   </FormItem>
                 )}
               />
+              <p className="text-sm text-muted-foreground">* Required fields</p>
 
               <CardFooter className="px-0 pt-4">
                 <Button

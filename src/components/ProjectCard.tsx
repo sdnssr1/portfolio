@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
-import { Calendar, ExternalLink, Github, Star } from "lucide-react";
+import { Calendar, ExternalLink, Cpu, Github, Star } from "lucide-react";
 import React, { useState } from "react";
 import ProjectDetails from "./ProjectDetails";
 
@@ -46,6 +46,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     updatedAt,
     category,
   } = projectProp;
+  
+  // Check if project is AI/ML related
+  const isAIProject = technologies?.some(tech => 
+    ['ai', 'ml', 'machine learning', 'artificial intelligence', 'tensorflow', 'pytorch', 'llm', 'nlp', 'computer vision']
+    .includes(tech.toLowerCase())
+  ) || title.toLowerCase().includes('ai') || title.toLowerCase().includes('ml');
   // Handle image loading errors
   const [imgSrc, setImgSrc] = useState(image);
   const handleImageError = () => {
@@ -83,21 +89,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             onError={handleImageError}
             loading="lazy"
           />
-          {category && (
-            <motion.div 
-              className="absolute top-2 right-2"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Badge variant="secondary">{category}</Badge>
-            </motion.div>
-          )}
+          <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+            {isAIProject && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Badge className="bg-purple-600 hover:bg-purple-700 flex items-center gap-1">
+                  <Cpu className="h-3 w-3" />
+                  <span>AI/ML</span>
+                </Badge>
+              </motion.div>
+            )}
+            {category && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Badge variant="secondary">{category}</Badge>
+              </motion.div>
+            )}
+          </div>
         </div>
 
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-bold line-clamp-1">{title}</CardTitle>
-          <CardDescription className="line-clamp-2 min-h-[40px]">
+          <CardTitle className="text-xl font-bold line-clamp-1 text-foreground">{title}</CardTitle>
+          <CardDescription className="line-clamp-2 min-h-[40px] text-muted-foreground/90">
             {description || 'No description provided.'}
           </CardDescription>
         </CardHeader>

@@ -1,21 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Sun, Moon } from "lucide-react";
+import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import HeroSection from "./HeroSection";
 import ProjectsSection from "./ProjectsSection";
 import ContactForm from "./ContactForm";
+import ServicesSection from "./ServicesSection";
+import { ThemeSwitcher } from "./ThemeSwitcher";
+import GitHubContributions from "./GitHubContributions";
 
 const Home = () => {
-  const [darkMode, setDarkMode] = React.useState(false);
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // In a real implementation, this would update the document class or a theme context
-  };
 
   // Animation variants for sections
   const sectionVariants = {
@@ -28,7 +23,7 @@ const Home = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-background ${darkMode ? "dark" : ""}`}>
+    <div className="min-h-screen bg-background">
       {/* Navigation Bar */}
       <nav className="sticky top-0 z-10 w-full backdrop-blur-md bg-background/90 border-b border-border px-4 md:px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -36,81 +31,105 @@ const Home = () => {
 
           <div className="flex items-center space-x-6">
             <div className="hidden md:flex space-x-6">
-              <a href="#about" className="hover:text-primary transition-colors">
+              <a href="#about" className="text-foreground/80 hover:text-primary transition-colors">
                 About
               </a>
               <a
+                href="#services"
+                className="text-foreground/80 hover:text-primary transition-colors"
+              >
+                Services
+              </a>
+              <a
                 href="#projects"
-                className="hover:text-primary transition-colors"
+                className="text-foreground/80 hover:text-primary transition-colors"
               >
                 Projects
               </a>
               <a
                 href="#skills"
-                className="hover:text-primary transition-colors"
+                className="text-foreground/80 hover:text-primary transition-colors"
               >
                 Skills
               </a>
               <a
-                href="#education"
-                className="hover:text-primary transition-colors"
+                href="https://github.com/sdnssr1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-foreground/80 hover:text-primary transition-colors"
               >
-                Education
-              </a>
-              <a
-                href="#resume"
-                className="hover:text-primary transition-colors"
-              >
-                Resume
+                <Github className="h-4 w-4" />
+                GitHub
               </a>
               <a
                 href="#contact"
-                className="hover:text-primary transition-colors"
+                className="text-foreground/80 hover:text-primary transition-colors"
               >
                 Contact
               </a>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4" />
-              <Switch
-                checked={darkMode}
-                onCheckedChange={toggleDarkMode}
-                aria-label="Toggle dark mode"
-              />
-              <Moon className="h-4 w-4" />
-            </div>
+            <ThemeSwitcher />
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 py-4">
         {/* Hero Section */}
-        <section id="about" className="py-16">
+        <section id="about" className="py-6">
           <HeroSection />
         </section>
 
-        <Separator className="my-12" />
+        <Separator className="my-4" />
 
-        {/* Projects Section */}
+        {/* Services Section */}
         <motion.section
-          id="projects"
-          className="py-16"
+          id="services"
+          className="py-6"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={sectionVariants}
         >
-          <h2 className="text-3xl font-bold mb-8">Projects</h2>
+          <ServicesSection />
+        </motion.section>
+
+        <Separator className="my-4" />
+
+        {/* Projects Section */}
+        <motion.section
+          id="projects"
+          className="py-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={sectionVariants}
+        >
+          <h2 className="text-3xl font-bold mb-3">Projects</h2>
           <ProjectsSection />
         </motion.section>
 
-        <Separator className="my-12" />
+        <Separator className="my-4" />
+        
+        {/* GitHub Contributions Section */}
+        <motion.section
+          id="github-activity"
+          className="py-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={sectionVariants}
+        >
+          <h2 className="text-3xl font-bold mb-3">GitHub Activity</h2>
+          <GitHubContributions username="sdnssr1" />
+        </motion.section>
+
+        <Separator className="my-4" />
 
         {/* Skills Section */}
         <motion.section
           id="skills"
-          className="py-16"
+          className="py-6"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
