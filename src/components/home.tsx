@@ -1,14 +1,13 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import { Github } from "lucide-react";
+import ContactForm from "./ContactForm";
+import GitHubContributions from "./GitHubContributions";
 import HeroSection from "./HeroSection";
 import ProjectsSection from "./ProjectsSection";
-import ContactForm from "./ContactForm";
 import ServicesSection from "./ServicesSection";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import GitHubContributions from "./GitHubContributions";
 
 const Home = () => {
 
@@ -400,7 +399,7 @@ const Home = () => {
                 </a>
               </div>
 
-              <p className="text-muted-foreground">Email: saeed@example.com</p>
+              <p className="text-muted-foreground">Email: sdnssr001@gmail.com</p>
             </div>
 
             <ContactForm />
@@ -409,7 +408,7 @@ const Home = () => {
       </main>
 
       <footer className="bg-muted py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 md:px-x8 text-center">
           <p className="text-muted-foreground">
             © {new Date().getFullYear()} Saeed. All rights reserved.
           </p>

@@ -1,5 +1,5 @@
-import { X, Calendar, ExternalLink, Github, Star } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Calendar, ExternalLink, Github, Star, X } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
@@ -60,9 +60,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           initial={{ opacity: 0, y: 20, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.98 }}
-          transition={{ 
+          transition={{
             duration: 0.2,
-            ease: [0.16, 1, 0.3, 1]
+            ease: [0.16, 1, 0.3, 1],
           }}
           className="relative bg-background rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-border/50"
           onClick={(e) => e.stopPropagation()}
@@ -85,7 +85,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src =
-                  'https://via.placeholder.com/800x450/1e293b/64748b?text=No+Preview';
+                  "https://via.placeholder.com/800x450/1e293b/64748b?text=No+Preview";
               }}
             />
             {project.category && (
@@ -116,23 +116,28 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                 </div>
               </div>
               <div className="flex gap-2">
-                {project.githubUrl && (
-                  <Button asChild variant="outline" size="sm">
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Github className="h-4 w-4 mr-2" />
-                      View Code
-                    </a>
-                  </Button>
-                )}
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={
+                      project.title === "Hussein_Muya_Portfolio"
+                        ? "https://husseinmuya.com"
+                        : project.githubUrl || "#"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Github className="h-4 w-4 mr-2" />
+                    {project.title === "Hussein_Muya_Portfolio"
+                      ? "Visit Site"
+                      : "View Code"}
+                  </a>
+                </Button>
+
                 {project.demoUrl && (
-                  <Button 
-                    asChild 
+                  <Button
+                    asChild
                     size="sm"
                     variant="outline"
                     onClick={(e) => {
@@ -141,7 +146,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                       onClose();
                       // Then open the demo URL in a new tab
                       setTimeout(() => {
-                        window.open(project.demoUrl, '_blank', 'noopener,noreferrer');
+                        window.open(
+                          project.demoUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        );
                       }, 100);
                     }}
                     className="flex items-center gap-2 hover:bg-accent/90 transition-colors"
@@ -176,30 +185,33 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
             <div className="flex flex-wrap gap-4">
               {project.githubUrl && (
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Use the project's githubUrl if it exists and is a full URL
                     let githubUrl = project.githubUrl;
-                    
+
                     // If it's not a full URL, try to construct it from metadata
-                    if (!githubUrl.startsWith('http') && project.metadata) {
+                    if (!githubUrl.startsWith("http") && project.metadata) {
                       githubUrl = `https://github.com/${project.metadata.ownerLogin}/${project.metadata.repoName}`;
-                    } 
+                    }
                     // If we still don't have a valid URL, use a fallback
-                    else if (!githubUrl.startsWith('http')) {
-                      console.warn('No valid GitHub URL found for project:', project.id);
+                    else if (!githubUrl.startsWith("http")) {
+                      console.warn(
+                        "No valid GitHub URL found for project:",
+                        project.id
+                      );
                       return;
                     }
-                    
+
                     // Close the modal first
                     onClose();
-                    
+
                     // Then open the URL in a new tab
                     setTimeout(() => {
-                      window.open(githubUrl, '_blank', 'noopener,noreferrer');
+                      window.open(githubUrl, "_blank", "noopener,noreferrer");
                     }, 100);
                   }}
                   className="flex items-center gap-2 hover:bg-accent/90 transition-colors"
@@ -211,14 +223,18 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                 </Button>
               )}
               {project.demoUrl && (
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   onClick={(e) => {
                     e.stopPropagation();
                     // Close the modal after a small delay to allow the click to register
                     setTimeout(() => {
                       onClose();
-                      window.open(project.demoUrl, '_blank', 'noopener,noreferrer');
+                      window.open(
+                        project.demoUrl,
+                        "_blank",
+                        "noopener,noreferrer"
+                      );
                     }, 100);
                   }}
                   className="flex items-center gap-2 transition-colors"

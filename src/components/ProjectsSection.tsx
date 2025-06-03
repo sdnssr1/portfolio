@@ -1,8 +1,8 @@
 import { fetchGitHubRepos } from "@/utils/github";
 import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import ProjectCard from "./ProjectCard";
-
 interface Project {
   id: string;
   title: string;
@@ -19,82 +19,99 @@ interface Project {
 interface ProjectsSectionProps {
   projects?: Project[];
   includeGitHub?: boolean;
+  initialSearch?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const GITHUB_USERNAME = "sdnssr1";
 
 // Helper function to determine the category based on technologies and title
 const determineCategory = (repo: any): string => {
-  const title = (repo.name || '').toLowerCase();
-  const description = (repo.description || '').toLowerCase();
-  const topics = Array.isArray(repo.topics) ? repo.topics.map((t: string) => t.toLowerCase()) : [];
-  
-  // Check for AI/ML projects
+  const title = (repo.name || "").toLowerCase();
+  const description = (repo.description || "").toLowerCase();
+  const topics = Array.isArray(repo.topics)
+    ? repo.topics.map((t: string) => t.toLowerCase())
+    : [];
+
+  const language = (repo.language || "").toLowerCase(); // ← add this line!
+
+  /* Portfolio */
+  if (title.includes("portfolio") || topics.includes("portfolio"))
+    return "Portfolio";
+
+  /* AI / ML */
   if (
-    topics.some(tech => ['ai', 'ml', 'machine-learning', 'artificial-intelligence', 'tensorflow', 'pytorch', 'llm', 'nlp', 'computer-vision'].includes(tech)) ||
-    title.includes('ai') || title.includes('ml') || description.includes('ai ') || description.includes('machine learning')
-  ) {
-    return 'AI';
-  }
-  
-  // Check for Mobile projects
+    topics.includes("ai") ||
+    topics.includes("ml") ||
+    title.includes("learning")
+  )
+    return "AI";
+
+  /* Mobile / Native */
   if (
-    topics.some(tech => ['mobile', 'android', 'ios', 'flutter', 'react-native', 'swift', 'kotlin'].includes(tech)) ||
-    title.includes('mobile') || title.includes('app') || description.includes('mobile app')
-  ) {
-    return 'Mobile';
-  }
-  
-  // Check for FullStack projects
+    topics.includes("mobile") ||
+    topics.includes("ios") ||
+    topics.includes("android") ||
+    topics.includes("react-native") ||
+    ["swift", "kotlin"].includes(language)
+  )
+    return "Mobile";
+
+  /* Backend / API */
+  if (title.includes("api") || description.includes("api"))
+    return "Backend / API";
+
+  /* Systems */
   if (
-    topics.some(tech => ['fullstack', 'full-stack', 'backend', 'frontend'].includes(tech)) ||
-    (topics.some(tech => ['react', 'vue', 'angular'].includes(tech)) && 
-     topics.some(tech => ['node', 'express', 'django', 'flask', 'spring'].includes(tech)))
-  ) {
-    return 'FullStack';
-  }
-  
-  // Check for Web Development projects
-  if (
-    topics.some(tech => ['web', 'website', 'react', 'vue', 'angular', 'javascript', 'typescript', 'html', 'css', 'tailwind'].includes(tech)) ||
-    title.includes('web') || description.includes('website') || description.includes('web app')
-  ) {
-    return 'Web Development';
-  }
-  
-  // Check for Consulting projects
-  if (
-    topics.some(tech => ['consulting', 'analysis', 'report', 'business'].includes(tech)) ||
-    title.includes('consult') || description.includes('consulting') || description.includes('analysis')
-  ) {
-    return 'Consulting';
-  }
-  
-  // Default to GitHub if no specific category is determined
-  return 'GitHub';
+    ["c", "c++", "rust", "go"].includes(language) ||
+    title.includes("systems")
+  )
+    return "Systems";
+
+  /* Coursework */
+  if (description.match(/assignment|course|lab|homework/i)) return "Coursework";
+
+  /* Utilities */
+  if (description.match(/cli|theme|tool/i)) return "Utilities";
+
+  return "GitHub";
 };
 
 const mapGitHubRepoToProject = (repo: any): Project => {
-  const repoName = repo.name || '';
-  const uniqueId = `gh-${repo.id}-${repoName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-  const githubUrl = repo.html_url || `https://github.com/${GITHUB_USERNAME}/${repoName}`;
+  const repoName = repo.name || "";
   const ownerLogin = repo.owner?.login || GITHUB_USERNAME;
-  
+
+  /* 🔸 local overrides for special repos -------------------------- */
+  const manualImageMap: Record<string, string> = {
+    hussein_muya_portfolio: "/hussein-preview-top.jpg",
+    kens_portfolio: "/ken-preview.jpg",
+    portfolio: "/portfolio-preview.jpg",
+  };
+  const manualImage = manualImageMap[repoName.toLowerCase()];
+  /* -------------------------------------------------------------- */
+
   return {
-    id: uniqueId,
+    id: `gh-${repo.id}-${repoName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
     title: repoName
-      .replace(/-/g, ' ')
-      .replace(/\./g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase())
+      .replace(/-/g, " ")
+      .replace(/\./g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
       .trim(),
-    description: repo.description || 'No description provided.',
+    description: repo.description || "No description provided.",
     technologies: Array.isArray(repo.topics) ? repo.topics.slice(0, 5) : [],
-    image: `https://opengraph.githubassets.com/1/${ownerLogin}/${repoName}`,
-    githubUrl: githubUrl,
-    demoUrl: repo.homepage && repo.homepage.startsWith('http') ? repo.homepage : undefined,
+    image:
+      manualImage ??
+      `https://opengraph.githubassets.com/1/${ownerLogin}/${repoName}`,
+    githubUrl:
+      repo.html_url || `https://github.com/${GITHUB_USERNAME}/${repoName}`,
+    demoUrl:
+      repo.homepage && repo.homepage.startsWith("http")
+        ? repo.homepage
+        : undefined,
     stars: repo.stargazers_count,
     updatedAt: repo.updated_at,
-    category: determineCategory(repo)
+    category: determineCategory(repo),
+    source: "github",
   };
 };
 
@@ -105,66 +122,100 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   const [activeFilter, setActiveFilter] = useState<string>("All");
   const [isLoading, setIsLoading] = useState<boolean>(includeGitHub);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const loadGitHubRepos = async () => {
-      if (!includeGitHub) return;
-      
-      try {
-        const repos = await fetchGitHubRepos(GITHUB_USERNAME);
-        const githubProjects = repos.map(mapGitHubRepoToProject);
-        setProjects(prev => [...prev, ...githubProjects]);
-      } catch (error) {
-        console.error("Failed to load GitHub projects:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!includeGitHub) return;
 
-    loadGitHubRepos();
+    fetchGitHubRepos(GITHUB_USERNAME).then((repos) => {
+      const mapped = repos.map(mapGitHubRepoToProject); // each with source:"github"
+
+      setProjects((prev) => {
+        // titles of all MANUAL projects currently in state
+        const manualTitles = new Set(
+          prev
+            .filter((p) => p.source === "manual")
+            .map((p) => p.title.toLowerCase())
+        );
+
+        // keep only GitHub projects we don’t already have manually
+        const uniqueGitHub = mapped.filter(
+          (p) => !manualTitles.has(p.title.toLowerCase())
+        );
+
+        // strip old GitHub slice, then add fresh unique list
+        return [...prev.filter((p) => p.source !== "github"), ...uniqueGitHub];
+      });
+    });
   }, [includeGitHub]);
+
+  {
+    /* ── Search input ─────────────────────────────── */
+  }
+  <div className="mt-6 mb-4 flex justify-center relative">
+    <input
+      type="text"
+      placeholder="Search projects…"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full max-w-md rounded-lg border border-border/50 bg-background/60 px-4 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-colors"
+    />
+
+    {/* clear button */}
+    {searchTerm && (
+      <button
+        onClick={() => setSearchTerm("")}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        aria-label="Clear search"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    )}
+  </div>;
 
   // Define predefined categories
   const predefinedCategories = [
     "All",
+    "Portfolio",
     "Web Development",
     "AI",
-    "FullStack",
     "Mobile",
-    "Consulting",
-    "GitHub"
+    "Backend / API",
+    "Systems",
+    "Utilities",
+    "Coursework",
+    "GitHub",
   ];
-  
+
   // Get categories that actually have projects
-  const availableCategories = Array.from(new Set(projects.map(project => project.category)));
-  
+  const availableCategories = Array.from(
+    new Set(projects.map((project) => project.category))
+  );
+
   // Use only predefined categories that have projects, always keeping "All"
   const categories = [
     "All",
-    ...predefinedCategories.filter(cat => cat !== "All" && availableCategories.includes(cat))
+    ...predefinedCategories.filter(
+      (cat) => cat !== "All" && availableCategories.includes(cat)
+    ),
   ];
 
   const filteredProjects = useMemo(() => {
-    return activeFilter === "All" 
-      ? projects 
-      : projects.filter(project => project.category === activeFilter);
-  }, [projects, activeFilter]);
+    const byCategory =
+      activeFilter === "All"
+        ? projects
+        : projects.filter((p) => p.category === activeFilter);
 
-  if (isLoading) {
-    return (
-      <section id="projects" className="py-20 bg-background">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Projects</h2>
-          <p className="text-muted-foreground mb-8">Loading projects...</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-muted/50 rounded-lg p-4 animate-pulse h-64" />
-            ))}
-          </div>
-        </div>
-      </section>
+    if (!searchTerm.trim()) return byCategory;
+
+    const term = searchTerm.trim().toLowerCase();
+    return byCategory.filter(
+      (p) =>
+        p.title.toLowerCase().includes(term) ||
+        p.description?.toLowerCase().includes(term) ||
+        p.technologies?.some((t) => t.toLowerCase().includes(term))
     );
-  }
+  }, [projects, activeFilter, searchTerm]);
 
   return (
     <section id="projects" className="py-16 bg-muted/10">
@@ -179,8 +230,20 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
             My Projects
           </h2>
+
+          <div className="mt-6 mb-4 flex justify-center">
+            <input
+              type="text"
+              placeholder="Search projects…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full max-w-md rounded-lg border bg-background/50 px-4 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/50 transition-colors"
+            />
+          </div>
+
           <p className="mt-4 text-lg text-muted-foreground/90 max-w-3xl mx-auto">
-            A selection of my recent work and contributions to open source projects.
+            A selection of my recent work and contributions to open source
+            projects.
           </p>
         </motion.div>
 
@@ -191,8 +254,8 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
               onClick={() => setActiveFilter(filter)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                 activeFilter === filter
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                  : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/50 hover:border-border/70'
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                  : "bg-muted/50 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/50 hover:border-border/70"
               }`}
             >
               {filter}
@@ -202,9 +265,12 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project, index) => (
-            <ProjectCard 
-              key={`${project.id}-${index}-${project.title.replace(/\s+/g, '')}`} 
-              project={project} 
+            <ProjectCard
+              key={`${project.id}-${index}-${project.title.replace(
+                /\s+/g,
+                ""
+              )}`}
+              project={project}
             />
           ))}
         </div>
