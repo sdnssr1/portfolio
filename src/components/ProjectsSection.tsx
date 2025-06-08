@@ -14,6 +14,7 @@ interface Project {
   category: string;
   stars?: number;
   updatedAt?: string;
+  source?: string;
 }
 
 interface ProjectsSectionProps {
@@ -82,12 +83,35 @@ const mapGitHubRepoToProject = (repo: any): Project => {
   const ownerLogin = repo.owner?.login || GITHUB_USERNAME;
 
   /* 🔸 local overrides for special repos -------------------------- */
+  // Direct mapping using the exact repository names
   const manualImageMap: Record<string, string> = {
-    hussein_muya_portfolio: "/hussein-preview-top.jpg",
-    kens_portfolio: "/ken-preview.jpg",
+    Hussein_Muya_Portfolio: "/hussein-preview-top.jpg",
+    Kens_Muvatsi_Portfolio: "/ken-preview.jpg",
     portfolio: "/portfolio-preview.jpg",
+    calenderAI: "/calender-preview.svg",
+    "CMS-API-and-Frontend-application": "/cms-api-preview.svg",
+    Momentum_Coaching_Portfolio: "hannahloee.jpg",
   };
-  const manualImage = manualImageMap[repoName.toLowerCase()];
+
+  // Debug: Log repository name information
+  console.log(`Repository name: ${repoName}`);
+  console.log(`Has exact match: ${Boolean(manualImageMap[repoName])}`);
+  console.log(
+    `Has case-insensitive match: ${Boolean(
+      manualImageMap[
+        Object.keys(manualImageMap).find(
+          (key) => key.toLowerCase() === repoName.toLowerCase()
+        )
+      ]
+    )}`
+  );
+
+  // Try to find a case-insensitive match
+  const matchingKey = Object.keys(manualImageMap).find(
+    (key) => key.toLowerCase() === repoName.toLowerCase()
+  );
+
+  const manualImage = matchingKey ? manualImageMap[matchingKey] : null;
   /* -------------------------------------------------------------- */
 
   return {

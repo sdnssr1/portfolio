@@ -10,7 +10,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { Calendar, Cpu, ExternalLink, Github, Star } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProjectDetails from "./ProjectDetails";
 
 export interface Project {
@@ -61,12 +61,38 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project: projectProp }) => {
     ) ||
     title.toLowerCase().includes("ai") ||
     title.toLowerCase().includes("ml");
-  // Handle image loading errors
-  const [imgSrc, setImgSrc] = useState(image);
+  // Handle image loading errors and special image mapping
+  const getInitialImageSrc = () => {
+    // Direct mapping for specific project titles
+    if (title === "Calender AI") {
+      return "/calender-preview.svg";
+    } else if (title === "CMS API And Frontend Application") {
+      return "/cms-api-preview.svg";
+    }
+    return image;
+  };
+  
+  const [imgSrc, setImgSrc] = useState(getInitialImageSrc());
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  
+  // Log the image source for debugging
+  useEffect(() => {
+    console.log(`ProjectCard for ${title} - Initial image source: ${image}`);
+    console.log(`ProjectCard for ${title} - Selected image source: ${imgSrc}`);
+  }, [title, image, imgSrc]);
+  
   const handleImageError = () => {
+    console.error(`Failed to load image for ${title}: ${imgSrc}`);
+    setImgError(true);
     setImgSrc(
       "https://via.placeholder.com/800x450/1e293b/64748b?text=No+Preview"
     );
+  };
+  
+  const handleImageLoad = () => {
+    console.log(`Successfully loaded image for ${title}`);
+    setImgLoaded(true);
   };
 
   return (
@@ -91,12 +117,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project: projectProp }) => {
           aria-label={`View details for ${title}`}
         >
           {/* Project Image */}
-          <div className="relative h-48 overflow-hidden bg-muted/20">
+          <div className="relative h-48 overflow-hidden bg-muted/40 flex items-center justify-center">
             <img
               src={imgSrc}
               alt={title}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-scale-down hover:scale-105 transition-transform duration-500"
               onError={handleImageError}
+              onLoad={handleImageLoad}
               loading="lazy"
             />
             <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">

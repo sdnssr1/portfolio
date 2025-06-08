@@ -1,6 +1,7 @@
 import { Briefcase, Code, Cpu, Database, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 import React from "react";
+import { cn } from "@/lib/utils";
 
 const services = [
   {
@@ -63,7 +64,15 @@ const ServicesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="group bg-card/50 p-6 rounded-xl shadow-sm border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 backdrop-blur-sm"
+              className="group p-6 rounded-xl border-0 transition-all duration-300 backdrop-blur-md relative overflow-hidden z-10 hover:-translate-y-1 glass-card"
+              style={{
+                boxShadow: '0 4px 20px rgba(var(--primary-rgb), 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                background: 'linear-gradient(135deg, rgba(var(--card-rgb), 0.2), rgba(var(--card-rgb), 0.07))',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+              whileHover={{
+                boxShadow: '0 8px 32px rgba(var(--primary-rgb), 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+              }}
             >
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 {React.cloneElement(service.icon, {
@@ -90,4 +99,76 @@ const ServicesSection = () => {
   );
 };
 
-export default ServicesSection;
+// Add the shine and glass effect animations
+const styles = `
+  @keyframes shine {
+    0% {
+      background-position: 200% center;
+    }
+    100% {
+      background-position: -200% center;
+    }
+  }
+
+  .animate-shine {
+    animation: shine 8s ease-in-out infinite;
+    background-size: 200% auto;
+  }
+  
+  .glass-card {
+    position: relative;
+  }
+  
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+    border-radius: 10px 10px 0 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 80%);
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  
+  .glass-card:hover::after {
+    opacity: 1;
+  }
+`;
+
+// Inject the styles into the document head
+const StyleInjector = () => {
+  React.useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = styles;
+    document.head.appendChild(styleElement);
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+  return null;
+};
+
+const ServicesWithStyles = () => (
+  <>
+    <StyleInjector />
+    <ServicesSection />
+  </>
+);
+
+export default ServicesWithStyles;

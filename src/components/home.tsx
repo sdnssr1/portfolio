@@ -105,7 +105,20 @@ const Home = () => {
           variants={sectionVariants}
         >
           <h2 className="text-3xl font-bold mb-3">Projects</h2>
-          <ProjectsSection />
+          <ProjectsSection 
+            projects={[
+              {
+                id: "manual-hannahloaa",
+                title: "Hannah Loaa",
+                description: "Modern website for hannahloaa.com with sleek design and responsive interface.",
+                technologies: ["React", "TypeScript", "Tailwind CSS"],
+                image: "/hannahloaa-preview.jpg", 
+                demoUrl: "https://hannahloaa.com",
+                category: "Web Development",
+                source: "manual"
+              }
+            ]}
+          />
         </motion.section>
 
         <Separator className="my-4" />
