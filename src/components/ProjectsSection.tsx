@@ -1,6 +1,6 @@
 import { fetchGitHubRepos } from "@/utils/github";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import ProjectCard from "./ProjectCard";
 interface Project {
@@ -89,8 +89,9 @@ const mapGitHubRepoToProject = (repo: any): Project => {
     Kens_Muvatsi_Portfolio: "/ken-preview.jpg",
     portfolio: "/portfolio-preview.jpg",
     calenderAI: "/calender-preview.svg",
-    "CMS-API-and-Frontend-application": "/cms-api-preview.svg",
-    Momentum_Coaching_Portfolio: "hannahloee.jpg",
+    "CMS-API-and-Frontend-application": "/images/cms-api-preview.png", // Updated path
+    Momentum_Coaching_Portfolio: "/images/momentum-coaching.png", // Updated path
+    "Hannah-Loaa": "/images/hannah-loaa.png", // Added explicit mapping
   };
 
   // Debug: Log repository name information
@@ -124,8 +125,11 @@ const mapGitHubRepoToProject = (repo: any): Project => {
     description: repo.description || "No description provided.",
     technologies: Array.isArray(repo.topics) ? repo.topics.slice(0, 5) : [],
     image:
-      manualImage ??
+      manualImage ?? 
+      // Try GitHub opengraph as primary fallback
       `https://opengraph.githubassets.com/1/${ownerLogin}/${repoName}`,
+      
+    // Add fallback handling in the component itself to use placeholder if image fails to load
     githubUrl:
       repo.html_url || `https://github.com/${GITHUB_USERNAME}/${repoName}`,
     demoUrl:
@@ -147,6 +151,8 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(includeGitHub);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 6; // Show 6 projects per page
 
   useEffect(() => {
     if (!includeGitHub) return;
@@ -240,6 +246,17 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         p.technologies?.some((t) => t.toLowerCase().includes(term))
     );
   }, [projects, activeFilter, searchTerm]);
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+
+  // Reset to page 1 when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter, searchTerm]);
 
   return (
     <section id="projects" className="py-16 bg-muted/10">
@@ -288,7 +305,7 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project, index) => (
+          {currentProjects.map((project, index) => (
             <ProjectCard
               key={`${project.id}-${index}-${project.title.replace(
                 /\s+/g,
@@ -304,6 +321,45 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             <p className="text-muted-foreground">
               No projects found in this category.
             </p>
+          </div>
+        )}
+        
+        {/* Pagination */}
+        {filteredProjects.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-full border border-border/50 bg-background/60 text-foreground disabled:text-muted-foreground disabled:opacity-50 hover:bg-muted/30 transition-colors"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    currentPage === idx + 1
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background/60 border border-border/50 hover:bg-muted/30 text-foreground"
+                  }`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-full border border-border/50 bg-background/60 text-foreground disabled:text-muted-foreground disabled:opacity-50 hover:bg-muted/30 transition-colors"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
         )}
       </div>

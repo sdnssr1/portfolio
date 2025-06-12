@@ -1,6 +1,6 @@
-import { Briefcase, Code, Cpu, Database, Smartphone } from "lucide-react";
+import { Briefcase, Code, Cpu, Database, Smartphone, Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 const services = [
@@ -29,6 +29,12 @@ const services = [
     tags: ["React Native", "Expo", "iOS", "Android"],
   },
   {
+    title: "Social Media Strategy & Management",
+    description: "Strategic planning and management of your social media presence to boost engagement and brand awareness.",
+    icon: <Share2 className="h-8 w-8 text-primary" />,
+    tags: ["Content Strategy", "Analytics", "Community Management", "Brand Growth"],
+  },
+  {
     title: "Consulting",
     description: "Technical guidance and architecture design for your next project or startup.",
     icon: <Briefcase className="h-8 w-8 text-primary" />,
@@ -37,6 +43,16 @@ const services = [
 ];
 
 const ServicesSection = () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const servicesPerPage = 3; // Show 3 services per page
+
+  // Calculate pagination
+  const totalPages = Math.ceil(services.length / servicesPerPage);
+  const indexOfLastService = currentPage * servicesPerPage;
+  const indexOfFirstService = indexOfLastService - servicesPerPage;
+  const currentServices = services.slice(indexOfFirstService, indexOfLastService);
+
   return (
     <section id="services" className="py-16 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,7 +73,7 @@ const ServicesSection = () => {
         </motion.div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
+          {currentServices.map((service, index) => (
             <motion.div
               key={service.title}
               initial={{ opacity: 0, y: 20 }}
@@ -94,6 +110,45 @@ const ServicesSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-full border border-border/50 bg-background/60 text-foreground disabled:text-muted-foreground disabled:opacity-50 hover:bg-muted/30 transition-colors"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    currentPage === idx + 1
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background/60 border border-border/50 hover:bg-muted/30 text-foreground"
+                  }`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-full border border-border/50 bg-background/60 text-foreground disabled:text-muted-foreground disabled:opacity-50 hover:bg-muted/30 transition-colors"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
